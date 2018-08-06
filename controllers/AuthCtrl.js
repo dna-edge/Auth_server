@@ -13,7 +13,7 @@ let tokenError = {
  ********************/
 exports.auth = (req, res, next) => {
   if (!req.headers.token) {
-    tokenError.errors = { message : 'token is required!' };
+    tokenError.errors = { message : 'Access Token is required' };
     return res.status(400).json(tokenError);
   } else {
     authModel.auth(req.headers.token, (err, userData) => {
@@ -25,6 +25,18 @@ exports.auth = (req, res, next) => {
         return res.status(202).json({message:"Authenticate Successfully", data: userData});
       }
     });
+  }
+};
+
+/*******************
+ *  Refresh Token
+ ********************/
+exports.refresh = (req, res, next) => {
+  if (!req.headers.token) {
+    tokenError.errors = { message : 'Refresh Token is required' };
+    return res.status(400).json(tokenError);
+  } else {
+    
   }
 }
 

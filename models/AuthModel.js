@@ -1,8 +1,10 @@
+const redis = global.utils.redis;
+
 const jwt = require('jsonwebtoken');
 
 /*******************
  *  Authenticate
- *  @param: token
+ *  @param: (Access) token
  ********************/
 exports.auth = (token, done) => {
   jwt.verify(token, process.env.JWT_CERT, (err, decoded) => {
@@ -25,3 +27,11 @@ exports.auth = (token, done) => {
   });
 };
 
+
+/*******************
+ *  Authenticate
+ *  @param: (Refresh) token
+ ********************/
+exports.refresh = (token, done) => {
+  
+}

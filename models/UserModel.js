@@ -1,4 +1,5 @@
 const db = global.utils.db;
+const redis = global.utils.redis;
 
 const jwt = require('jsonwebtoken');
 
@@ -39,7 +40,7 @@ exports.register = (userData) => {
             if (rows.affectedRows === 1) {
               resolve(rows);
             } else {
-              const customErr = new Error("User register Custom Error");
+              const customErr = new Error("Error occurred while saving the user data into DB");
               reject(customErr);
             }
           }
@@ -70,6 +71,7 @@ exports.register = (userData) => {
  *  TODO refresh token
  ********************/
 exports.login = (userData) => {
+  // 1. 아이디 체크
   return new Promise((resolve, reject) => {
     const sql = `SELECT id
                    FROM users
@@ -89,6 +91,7 @@ exports.login = (userData) => {
     });
   })
   .then(() => {
+    // 2. 비밀번호 체크
     return new Promise((resolve, reject) => {
       const sql = `SELECT idx, id, nickname, avatar
                      FROM users
@@ -109,23 +112,39 @@ exports.login = (userData) => {
               avatar: rows[0].avatar
             };
 
-            const token = {
-              accessToken: jwt.sign(profile, process.env.JWT_CERT, {'expiresIn': "12h"}),
-              refreshToken: jwt.sign(profile, process.env.JWT_CERT, {'expiresIn': "7 days"})
-            };
-
-            const result = {
-              profile,
-              token
-            };
-
-            resolve(result);
+            resolve(profile);
           }
         }
       });
     });
-  });
-};
+  })
+  .then((profile) => {
+    // 3. 토큰 발급 및 저장
+    return new Promise((resolve, reject) => {
+      const token = {
+        accessToken: jwt.sign(profile, process.env.JWT_CERT, {'expiresIn': "12h"}),
+        refreshToken: jwt.sign(profile, process.env.JWT_CERT, {'expiresIn': "7 days"})
+      };
+
+      redis.set(token.refreshToken, profile.id, 'EX', 7*24*60*60); // 7일 후 삭제됨
+      redis.get(token.refreshToken,(err, object) => {
+        if (err){
+          const customErr = new Error("Error occurred while saving the token into Redis: " + err);
+          reject(customErr);
+        } else {
+          console.log(object); // refresh 토큰까지 완벽하게 저장된 경우
+          const result = {
+            profile,
+            token
+          };
+      
+          resolve(result);
+        }
+      });
+    });    
+  })
+};            
+        
 
 /****************
  *  salt 조회
