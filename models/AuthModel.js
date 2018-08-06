@@ -1,5 +1,4 @@
 const redis = global.utils.redis;
-
 const jwt = require('jsonwebtoken');
 
 /*******************
@@ -7,7 +6,7 @@ const jwt = require('jsonwebtoken');
  *  @param: (Access) token
  ********************/
 exports.auth = (token, done) => {
-  jwt.verify(token, process.env.JWT_CERT, (err, decoded) => {
+  jwt.verify(token, global.env.JWT_CERT, (err, decoded) => {
     if (err) {
       let customErr = '';
 
@@ -58,7 +57,7 @@ exports.refresh = (token, done) => {
         } else { // 토큰 체크 완료
           redis.set(token, userData.id, 'EX', 7*24*60*60); // 7일 후 삭제됨 (갱신)
           const result = {
-            accessToken: jwt.sign(userData, process.env.JWT_CERT, {'expiresIn': "12h"})
+            accessToken: jwt.sign(userData, global.env.JWT_CERT, {'expiresIn': "12h"})
           };
       
           resolve(result);
