@@ -121,8 +121,8 @@ exports.login = (userData) => {
     // 3. 토큰 발급 및 저장
     return new Promise((resolve, reject) => {
       const token = {
-        accessToken: jwt.sign(profile, process.env.JWT_CERT, {'expiresIn': "12h"}),
-        refreshToken: jwt.sign(profile, process.env.JWT_CERT, {'expiresIn': "7 days"})
+        accessToken: jwt.sign(profile, global.env.JWT_CERT, {'expiresIn': "12h"}),
+        refreshToken: jwt.sign(profile, global.env.JWT_CERT, {'expiresIn': "7 days"})
       };
 
       redis.set(token.refreshToken, profile.id, 'EX', 7*24*60*60); // 7일 후 삭제됨

@@ -1,6 +1,19 @@
-const db = require('./db').db;
-const redis = require('redis').createClient(6379, '13.209.43.122');
-redis.auth(process.env.REDIS_PASSWORD);
+const env = global.env;
 
-module.exports.db = db;
+// const db = require('./db').db;
+const redis = require('redis').createClient(env.REDIS_PORT, env.REDIS_HOST);
+redis.auth(env.REDIS_PASSWORD);
+
+const mysql = require('mysql');
+require('dotenv').config();
+
+const connection = mysql.createConnection({
+  host: env.DB_HOST,
+  port: env.DB_PORT,
+  user: env.DB_USER,
+  password: env.DB_PASSWORD,
+  database: env.DB_NAME
+});
+
+module.exports.db = connection;
 module.exports.redis = redis;
