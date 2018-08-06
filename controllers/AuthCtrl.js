@@ -22,7 +22,13 @@ exports.auth = (req, res, next) => {
       } else {
         req.userData = userData;
         // return next();
-        return res.status(202).json({message:"Authenticate Successfully", data: userData});
+
+        const respond = {
+          status: 202,
+          message: "Authenticate Successfully", 
+          data: userData
+        };
+        return res.status(202).json(respond);
       }
     });
   }
@@ -31,12 +37,26 @@ exports.auth = (req, res, next) => {
 /*******************
  *  Refresh Token
  ********************/
-exports.refresh = (req, res, next) => {
+exports.refresh = async (req, res, next) => {
   if (!req.headers.token) {
-    tokenError.errors = { message : 'Refresh Token is required' };
+    tokenError.errors = { message : "Refresh Token is required" };
     return res.status(400).json(tokenError);
   } else {
-    
+    let result = '';
+
+    try {
+      result = await authModel.refresh(req.headers.token);     
+    } catch (error) {
+      return next(error);
+    }
+
+    const respond = {
+      status: 200,
+      message: "New Access Token is successfully issued",
+      data: result
+    };
+
+    return res.status(200).json(respond);  
   }
 }
 

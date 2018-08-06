@@ -106,7 +106,6 @@ exports.login = (userData) => {
             reject(customErr);
           } else {
             const profile = {
-              idx: rows[0].idx,
               id: rows[0].id,
               nickname: rows[0].nickname,
               avatar: rows[0].avatar
@@ -131,8 +130,7 @@ exports.login = (userData) => {
         if (err){
           const customErr = new Error("Error occurred while saving the token into Redis: " + err);
           reject(customErr);
-        } else {
-          console.log(object); // refresh 토큰까지 완벽하게 저장된 경우
+        } else { // refresh 토큰까지 완벽하게 저장된 경우
           const result = {
             profile,
             token

@@ -7,7 +7,6 @@ const userModel = require('../models/UserModel');
  *  Register
  *  TODO validation
  ********************/
-
 let validationError = {
   name:'ValidationError',
   errors:{}
@@ -80,16 +79,18 @@ let validationError = {
     return next(error);
   }
   // 4. 등록 성공
-  return res.status(201).json({
-    message: "Register Successfully",
-    result: result[0]
-  });
+  const respond = {
+    status: 201,
+    message : "Register Successfully",
+    data: result[0]
+  };
+  return res.status(201).json(respond);
 };
+
 
 /*******************
  *  Login
  ********************/
-
 exports.login = async (req, res, next) => {
   /* 유효성 체크하기 */
   let isValid = true;
@@ -122,16 +123,15 @@ exports.login = async (req, res, next) => {
 
     result = await userModel.login(userData);
 
-    const sessionData = {
-      token: result.token,
-      idx: result.profile.idx,
-      id: result.profile.id,
-      nickname: result.nickname
-    };
   } catch (error) {
     return next(error);
   }
 
   /* 로그인 성공 시 */
-  return res.status(200).json(result);  
+  const respond = {
+    status: 200,
+    message : "Login Successfully",
+    data: result
+  };
+  return res.status(200).json(respond);  
 };
