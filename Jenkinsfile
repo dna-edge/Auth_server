@@ -25,7 +25,7 @@ node {
 
         sh 'docker rmi $(docker images -f "dangling=true" -q)'
         sh 'docker build -t authapiserver --no-cache .'
-        sh 'docker run -d -p 9008:9008 --name=authapiserver authapiserver:latest'        
+        sh 'docker run -d -p 9011:9011 --name=authapiserver authapiserver:latest'        
       }
     }
   }
