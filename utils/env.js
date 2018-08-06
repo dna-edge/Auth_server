@@ -1,8 +1,15 @@
 const fs = require('fs');
 
-const file = '/home/DNAenv.json';
+const file = '/DNAenv.json';
 
-const data = fs.readFileSync(file, 'utf8');
+let data = '';
+
+try {
+  data = fs.readFileSync('/home'+file, 'utf8');
+} catch (err) {
+  data = fs.readFileSync(file, 'urf8');
+}
+
 const jsonData = JSON.parse(data);
 
 module.exports = jsonData;
