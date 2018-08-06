@@ -24,7 +24,7 @@ app.use((req, res, next) => {
   next();
 });
 
-global.env = require('./utils/env');
+global.env = require('./env');
 global.utils = require('./utils/global');
 require('./routes')(app);
 
