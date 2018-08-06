@@ -26,7 +26,7 @@ node {
 
           try {
             sh 'docker rmi $(docker images -f "dangling=true" -q)'
-          catch (err) {}
+          } catch (err) {}
           
           sh 'docker build -t authapiserver --no-cache .'
           sh 'docker run -d -p 9011:9011 --name=authapiserver authapiserver:latest'     
