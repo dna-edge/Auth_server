@@ -11,21 +11,17 @@ node {
     }
     stage('Deploy'){
       if(env.BRANCH_NAME == 'master'){
-        // try {
-        //   sh 'docker rmi -f authapiserver'
-        // } catch (err) { 
-        //   throw err
-        // }
+        try {
+          sh 'docker rmi -f authapiserver'
+        } catch (err) {}
 
-        // try {
-        //   sh 'docker rm -f authapiserver'   
-        // } catch (err) { 
-        //   throw err
-        // }
+        try {
+          sh 'docker rm -f authapiserver'   
+        } catch (err) {}
         try {
           sh 'docker rmi $(docker images -f "dangling=true" -q)'
         } catch (err) {}
-        
+
         sh 'docker build -t authapiserver --no-cache .'
         sh 'docker run -d -p 9011:9011 --name=authapiserver authapiserver:latest'        
       }
