@@ -10,7 +10,6 @@ RUN npm install
 
 # 앱 소스 추가
 COPY . /usr/src/app
-COPY /home/DNAenv.json /usr/src/app/DNAenv.json
 
 # 포트 설정
 EXPOSE 9011

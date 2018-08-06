@@ -12,12 +12,17 @@ node {
     stage('Deploy'){
       if(env.BRANCH_NAME == 'master'){
         try {
+          sh 'cp /home/DNAenv.json .'
+        } catch (err) {}
+
+        try {
           sh 'docker rmi -f authapiserver'
         } catch (err) {}
 
         try {
           sh 'docker rm -f authapiserver'   
         } catch (err) {}
+        
         try {
           sh 'docker rmi $(docker images -f "dangling=true" -q)'
         } catch (err) {}
