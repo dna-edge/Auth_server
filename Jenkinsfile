@@ -13,6 +13,7 @@ node {
       if(env.BRANCH_NAME == 'master'){
         try {
           sh 'cp /home/DNAenv.json .'
+          sh 'ls'
         } catch (err) {}
 
         try {
@@ -22,7 +23,7 @@ node {
         try {
           sh 'docker rm -f authapiserver'   
         } catch (err) {}
-        
+
         try {
           sh 'docker rmi $(docker images -f "dangling=true" -q)'
         } catch (err) {}
