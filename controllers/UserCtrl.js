@@ -8,15 +8,16 @@ const userModel = require('../models/UserModel');
  *  TODO validation
  ********************/
 
- exports.register = async(req, res, next) => {   
+let validationError = {
+  name:'ValidationError',
+  errors:{}
+};
+
+ exports.register = async (req, res, next) => {   
   /* 1. 유효성 체크하기 */
   let password;
   let isValid = true;
-  let validationError = {
-    name:'ValidationError',
-    errors:{}
-  };
-
+  
   if (!req.body.id || validator.isEmpty(req.body.id)) {
     isValid = false;
     validationError.errors.id = { message : "ID is required" };
@@ -64,15 +65,16 @@ const userModel = require('../models/UserModel');
    // 3. 결과 암호화해서 DB에 저장하기
   let result = '';
   try {
-    const encodedPassword = helpers.encrypt(password);
+    const encodedPassword = helpers.doCypher(req.body.password);
     const userData = {
       id: req.body.id,
-      password: encodedPassword,
+      password: encodedPassword.password,
       nickname: req.body.nickname,
       email: req.body.email,
-      avatar: image
+      avatar: image,
+      salt: encodedPassword.newSalt
     };
-     result = await userModel.register(userData);
+    result = await userModel.register(userData);
   } catch (error) {
     // TODO 에러 잡았을때 응답메세지, 응답코드 수정할것
     return next(error);
@@ -82,4 +84,54 @@ const userModel = require('../models/UserModel');
     message: "Register Successfully",
     result: result[0]
   });
-}
+};
+
+/*******************
+ *  Login
+ ********************/
+
+exports.login = async (req, res, next) => {
+  /* 유효성 체크하기 */
+  let isValid = true;
+
+  if (!req.body.id || validator.isEmpty(req.body.id)) {
+    isValid = false;
+    validationError.errors.id = { message : 'ID is required!' };
+  }
+
+  if (!req.body.password || validator.isEmpty(req.body.password)) {
+    isValid = false;
+    validationError.errors.password = { message:'Password is required!' };
+  }
+
+  if (!isValid) return res.status(400).json(validationError);
+  /* 유효성 체크 끝 */
+
+  let result = '';
+
+  try {
+    // TODO 회원이 없을 경우
+
+    const getSalt = await userModel.getSalt(req.body.id);
+
+    const decodedPassword = helpers.doCypher(req.body.password, getSalt.salt).password;
+    const userData = {
+      id: req.body.id,
+      password: decodedPassword
+    };
+
+    result = await userModel.login(userData);
+
+    const sessionData = {
+      token: result.token,
+      idx: result.profile.idx,
+      id: result.profile.id,
+      nickname: result.nickname
+    };
+  } catch (error) {
+    return next(error);
+  }
+
+  /* 로그인 성공 시 */
+  return res.status(200).json(result);  
+};

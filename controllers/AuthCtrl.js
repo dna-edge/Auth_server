@@ -3,56 +3,30 @@ const validator = require('validator');
 const helpers = require('../utils/helpers');
 const authModel = require('../models/AuthModel');
 
+let tokenError = {
+  name:'tokenError',
+  errors:{}
+};
+
 /*******************
  *  Authenticate
  ********************/
-
-exports.login = (req, res, next) => {
-  /* 유효성 체크하기 */
-  let isValid = true;
-  let validationError = {
-    name:'ValidationError',
-    errors:{}
-  };
-
-  if (!req.body.id || validator.isEmpty(req.body.id)) {
-    isValid = false;
-    validationError.errors.id = { message : 'ID is required!' };
+exports.auth = (req, res, next) => {
+  if (!req.headers.token) {
+    tokenError.errors = { message : 'token is required!' };
+    return res.status(400).json(tokenError);
+  } else {
+    authModel.auth(req.headers.token, (err, userData) => {
+      if (err) {
+        return next(err);
+      } else {
+        req.userData = userData;
+        // return next();
+        return res.status(202).json({message:"Authenticate Successfully", data: userData});
+      }
+    });
   }
-
-  if (!req.body.password || validator.isEmpty(req.body.password)) {
-    isValid = false;
-    validationError.errors.password = { message:'Password is required!' };
-  }
-
-  if (!isValid) return res.status(400).json(validationError);
-  /* 유효성 체크 끝 */
-
-  let result = '';
-
-  try {
-    // TODO 회원이 없을 경우
-
-    const userData = {
-      id: req.body.id,
-      password: helpers.decrypt(req.body.password)
-    };
-
-    result = await authModel.login(userData);
-
-    const sessionData = {
-      token: result.token,
-      idx: result.profile.idx,
-      id: result.profile.id,
-      nickname: result.nickname
-    };
-  } catch (error) {
-    return next(error);
-  }
-
-  /* 로그인 성공 시 */
-  return res.status(200).json(result);  
-};
+}
 
 /*
 
