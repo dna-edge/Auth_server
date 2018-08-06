@@ -1,8 +1,6 @@
 const fs = require('fs');
-const list = fs.readdirSync(__dirname).filter(dir => !dir.match(/(%\.)|index/i));
+const list = fs.readdirSync(__dirname).filter(dir => !dir.match(/(^\.)|index/i));
 const router = require('express').Router();
-
-console.dir(list);
 
 module.exports = (app) => {
   for (let ctrl of list) {

@@ -1,3 +1,5 @@
+const crypto = require('crypto');
+
 exports.encrypt = (text) => {
   var cipher = crypto.createCipher(process.env.CYPHER_CODE, process.env.CYPHER)
   var crypted = cipher.update(text,'utf8','hex')

@@ -1,3 +1,5 @@
+const validator = require('validator');
+
 const helpers = require('../utils/helpers');
 const userModel = require('../models/UserModel');
 
@@ -6,41 +8,78 @@ const userModel = require('../models/UserModel');
  *  TODO validation
  ********************/
 
- exports.register = async(req, res, next) => {
-   let password;
-   if (req.body.password != req.body.confirm_password) {
-     return res.status(400).json({ message : "Passwords do not match" });
-   } else {
-     password = req.body.password;
-   }
+ exports.register = async(req, res, next) => {   
+  /* 1. 유효성 체크하기 */
+  let password;
+  let isValid = true;
+  let validationError = {
+    name:'ValidationError',
+    errors:{}
+  };
 
-   let image;
-   if (!req.file) { // 이미지가 없는 경우
-     image = null;
-   } else {
-     image = req.file.location;
-   }
+  if (!req.body.id || validator.isEmpty(req.body.id)) {
+    isValid = false;
+    validationError.errors.id = { message : "ID is required" };
+  }
 
-   let result = '';
-   try {
-     const encodedPassword = helpers.encrypt(password);
-     const userData = {
-       id: req.body.id,
-       password: encodedPassword,
-       nickname: req.body.nickname,
-       email: req.body.email,
-       avatar: image
-     };
+  if (!req.body.nickname || validator.isEmpty(req.body.nickname)) {
+    isValid = false;
+    validationError.errors.nickname = { message : "Nickname is required" };
+  }
 
+  if (!req.body.email || validator.isEmpty(req.body.email)) {
+    isValid = false;
+    validationError.errors.email = { message : "Email is required" };
+  }
+
+  if (!validator.isEmail(req.body.email)) {
+    isValid = false;
+    validationError.errors.email = { message : "Invalid email format" };
+  }
+
+  if (!req.body.password || validator.isEmpty(req.body.password)) {
+    isValid = false;
+    validationError.errors.password = { message : "Password is required" };
+  }
+  
+  // 입력한 비밀번호가 서로 일치하는지 체크
+  if (req.body.password !== req.body.confirm_password) {
+    isValid = false;
+    validationError.errors.password = { message : "Passwords do not match" };
+  } else {
+    password = req.body.password;
+  }
+
+  if (!isValid) return res.status(400).json(validationError);
+  /* 유효성 체크 끝 */
+
+  // 2. 아바타용 이미지를 업로드했는지 체크
+  // TODO 이미지 업로드 처리하기
+  let image;
+  if (!req.file) {
+    image = null;
+  } else {
+    image = req.file.location;
+  }
+   // 3. 결과 암호화해서 DB에 저장하기
+  let result = '';
+  try {
+    const encodedPassword = helpers.encrypt(password);
+    const userData = {
+      id: req.body.id,
+      password: encodedPassword,
+      nickname: req.body.nickname,
+      email: req.body.email,
+      avatar: image
+    };
      result = await userModel.register(userData);
-   } catch (error) {
-     // TODO 에러 잡았을때 응답메세지, 응답코드 수정할것
-     return next(error);
-   }
-
-   // success
+  } catch (error) {
+    // TODO 에러 잡았을때 응답메세지, 응답코드 수정할것
+    return next(error);
+  }
+  // 4. 등록 성공
   return res.status(201).json({
     message: "Register Successfully",
     result: result[0]
   });
- }
+}

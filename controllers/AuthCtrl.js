@@ -1,3 +1,6 @@
+const validator = require('validator');
+
+const helpers = require('../utils/helpers');
 const authModel = require('../models/AuthModel');
 
 /*******************
@@ -12,11 +15,12 @@ exports.login = (req, res, next) => {
     errors:{}
   };
 
-  if (!req.body.id) {
+  if (!req.body.id || validator.isEmpty(req.body.id)) {
     isValid = false;
-    validationError.errors.id = { message:'ID is required!' };
+    validationError.errors.id = { message : 'ID is required!' };
   }
-  if (!req.body.password) {
+
+  if (!req.body.password || validator.isEmpty(req.body.password)) {
     isValid = false;
     validationError.errors.password = { message:'Password is required!' };
   }
@@ -27,14 +31,11 @@ exports.login = (req, res, next) => {
   let result = '';
 
   try {
-    const getSalt = await userModel.getSalt(req.body.id);
-
     // TODO 회원이 없을 경우
-    // TODO salt가 undefined일 경우
 
     const userData = {
       id: req.body.id,
-      password: global.utils.doCypher(req.body.pw, getSalt.salt).password
+      password: helpers.decrypt(req.body.password)
     };
 
     result = await authModel.login(userData);

@@ -27,7 +27,7 @@ app.use((req, res, next) => {
 global.utils = require('./utils/global');
 require('./routes')(app);
 
-const PORT = 8001;
+const PORT = 9010;
 app.listen(PORT, () => {
   console.info(`[DNA-AuthApiServer] Listening on Port ${PORT}`);
 });
