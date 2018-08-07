@@ -5,7 +5,6 @@ const redis = require('redis').createClient(env.REDIS_PORT, env.REDIS_HOST);
 redis.auth(env.REDIS_PASSWORD);
 
 const mysql = require('mysql');
-require('dotenv').config();
 
 const connection = mysql.createConnection({
   host: env.DB_HOST,
