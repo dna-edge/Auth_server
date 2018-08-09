@@ -3,51 +3,59 @@ const validator = require('validator');
 const helpers = require('../utils/helpers');
 const userModel = require('../models/UserModel');
 
-/*******************
- *  Register
- *  TODO validation
- ********************/
 let validationError = {
   name:'ValidationError',
   errors:{}
 };
 
- exports.register = async (req, res, next) => {   
+/*******************
+ *  Register
+ *  TODO validation
+ *  TODO 이미지 등록
+ ********************/
+exports.register = async (req, res, next) => {   
+  /* PARAM */
+  const id = req.body.id || req.query.id;
+  const password = req.body.password || req.query.password;
+  const confirm_password = req.body.confirm_password || req.query.confirm_password;
+  const email = req.body.email || req.query.email;
+  const nickname = req.body.nickname || req.query.nickname;
+
   /* 1. 유효성 체크하기 */
-  let password;
+  let validpassword;
   let isValid = true;
   
-  if (!req.body.id || validator.isEmpty(req.body.id)) {
+  if (!id || validator.isEmpty(id)) {
     isValid = false;
     validationError.errors.id = { message : "ID is required" };
   }
 
-  if (!req.body.nickname || validator.isEmpty(req.body.nickname)) {
+  if (!nickname || validator.isEmpty(nickname)) {
     isValid = false;
     validationError.errors.nickname = { message : "Nickname is required" };
   }
 
-  if (!req.body.email || validator.isEmpty(req.body.email)) {
+  if (!email || validator.isEmpty(email)) {
     isValid = false;
     validationError.errors.email = { message : "Email is required" };
   }
 
-  if (!validator.isEmail(req.body.email)) {
+  if (!validator.isEmail(email)) {
     isValid = false;
     validationError.errors.email = { message : "Invalid email format" };
   }
 
-  if (!req.body.password || validator.isEmpty(req.body.password)) {
+  if (!password || validator.isEmpty(password)) {
     isValid = false;
     validationError.errors.password = { message : "Password is required" };
   }
   
   // 입력한 비밀번호가 서로 일치하는지 체크
-  if (req.body.password !== req.body.confirm_password) {
+  if (password !== confirm_password) {
     isValid = false;
     validationError.errors.password = { message : "Passwords do not match" };
   } else {
-    password = req.body.password;
+    validpassword = password;
   }
 
   if (!isValid) return res.status(400).json(validationError);
@@ -61,16 +69,17 @@ let validationError = {
   } else {
     image = req.file.location;
   }
-   // 3. 결과 암호화해서 DB에 저장하기
+
+  // 3. 결과 암호화해서 DB에 저장하기
   let result = '';
   try {
-    const encodedPassword = helpers.doCypher(req.body.password);
+    const encodedPassword = helpers.doCypher(validpassword);
     const userData = {
-      id: req.body.id,
+      id,
       password: encodedPassword.password,
-      nickname: req.body.nickname,
-      email: req.body.email,
-      avatar: image,
+      nickname,
+      email,
+      avatar,
       salt: encodedPassword.newSalt
     };
     result = await userModel.register(userData);
@@ -92,15 +101,19 @@ let validationError = {
  *  Login
  ********************/
 exports.login = async (req, res, next) => {
+  /* PARAM */
+  const id = req.body.id || req.query.id;
+  const password = req.body.password || req.query.password;
+
   /* 유효성 체크하기 */
   let isValid = true;
 
-  if (!req.body.id || validator.isEmpty(req.body.id)) {
+  if (!id || validator.isEmpty(id)) {
     isValid = false;
     validationError.errors.id = { message : 'ID is required!' };
   }
 
-  if (!req.body.password || validator.isEmpty(req.body.password)) {
+  if (!password || validator.isEmpty(password)) {
     isValid = false;
     validationError.errors.password = { message:'Password is required!' };
   }
@@ -113,11 +126,11 @@ exports.login = async (req, res, next) => {
   try {
     // TODO 회원이 없을 경우
 
-    const getSalt = await userModel.getSalt(req.body.id);
+    const getSalt = await userModel.getSalt(id);
 
-    const decodedPassword = helpers.doCypher(req.body.password, getSalt.salt).password;
+    const decodedPassword = helpers.doCypher(password, getSalt.salt).password;
     const userData = {
-      id: req.body.id,
+      id: id,
       password: decodedPassword
     };
 

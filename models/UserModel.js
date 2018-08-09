@@ -1,4 +1,4 @@
-const db = global.utils.db;
+const mysql = global.utils.mysql;
 const redis = global.utils.redis;
 
 const jwt = require('jsonwebtoken');
