@@ -1,11 +1,11 @@
 const env = global.env;
 
-// const db = require('./db').db;
-const redis = require('redis').createClient(env.REDIS_PORT, env.REDIS_HOST);
-redis.auth(env.REDIS_PASSWORD);
+/* redis */
+const redis = require('redis').createClient(env.REDIS_PORT, env.EC2_HOST);
+redis.auth(env.DB_PASSWORD);
 
+/* mysql */
 const mysql = require('mysql');
-require('dotenv').config();
 
 const connection = mysql.createConnection({
   host: env.DB_HOST,
@@ -15,5 +15,5 @@ const connection = mysql.createConnection({
   database: env.DB_NAME
 });
 
-module.exports.db = connection;
+module.exports.mysql = connection;
 module.exports.redis = redis;

@@ -59,20 +59,3 @@ exports.refresh = async (req, res, next) => {
     return res.status(200).json(respond);  
   }
 }
-
-/*
-
-if (!req.headers.token) {
-    return next (401);
-  } else {
-    authModel.auth(req.headers.token, (err, decoded) => {
-      if (err) {
-        return next(err);
-      } else {
-        req.userInfo = decoded;
-        return next;
-      }
-    });
-  }
-
-  */
