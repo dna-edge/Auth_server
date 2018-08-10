@@ -15,11 +15,11 @@ let validationError = {
  ********************/
 exports.register = async (req, res, next) => {   
   /* PARAM */
-  const id = req.body.id || req.query.id;
-  const password = req.body.password || req.query.password;
-  const confirm_password = req.body.confirm_password || req.query.confirm_password;
-  const email = req.body.email || req.query.email;
-  const nickname = req.body.nickname || req.query.nickname;
+  const id = req.body.id || req.params.id;
+  const password = req.body.password || req.params.password;
+  const confirm_password = req.body.confirm_password || req.params.confirm_password;
+  const email = req.body.email || req.params.email;
+  const nickname = req.body.nickname || req.params.nickname;
 
   /* 1. 유효성 체크하기 */
   let validpassword;
@@ -102,8 +102,8 @@ exports.register = async (req, res, next) => {
  ********************/
 exports.login = async (req, res, next) => {
   /* PARAM */
-  const id = req.body.id || req.query.id;
-  const password = req.body.password || req.query.password;
+  const id = req.body.id || req.params.id;
+  const password = req.body.password || req.params.password;
 
   /* 유효성 체크하기 */
   let isValid = true;
