@@ -14,7 +14,7 @@ exports.register = (userData) => {
                    FROM users 
                   WHERE id = ?`;
 
-    db.query(sql, [userData.id], (err, rows) => {
+    mysql.query(sql, [userData.id], (err, rows) => {
       if (err) {
         reject(err);
       } else {
@@ -32,7 +32,7 @@ exports.register = (userData) => {
     return new Promise((resolve, reject) => {
       const sql = `INSERT INTO users (id, password, nickname, email, avatar, salt) 
                           VALUES (?, ?, ?, ?, ?, ?)`;
-      db.query(sql, [userData.id, userData.password, userData.nickname, 
+      mysql.query(sql, [userData.id, userData.password, userData.nickname, 
         userData.email, userData.avatar, userData.salt], (err, rows) => {
           if (err) {
             reject (err);
@@ -54,7 +54,7 @@ exports.register = (userData) => {
                      FROM users 
                     WHERE idx = ?`;
       
-      db.query(sql, result.insertId, (err, rows) => {
+      mysql.query(sql, result.insertId, (err, rows) => {
         if (err) {
           reject(err);
         } else {
@@ -77,7 +77,7 @@ exports.login = (userData) => {
                    FROM users
                   WHERE id = ?`;
     
-    db.query(sql, [userData.id], (err, rows) => {
+    mysql.query(sql, [userData.id], (err, rows) => {
       if (err) {
         reject(err);
       } else {
@@ -97,7 +97,7 @@ exports.login = (userData) => {
                      FROM users
                     WHERE id = ? AND password = ?`;
 
-      db.query(sql, [userData.id, userData.password], (err, rows) => {
+      mysql.query(sql, [userData.id, userData.password], (err, rows) => {
         if (err) {
           reject(err);
         } else {
@@ -106,6 +106,7 @@ exports.login = (userData) => {
             reject(customErr);
           } else {
             const profile = {
+              idx: rows[0].idx,
               id: rows[0].id,
               nickname: rows[0].nickname,
               avatar: rows[0].avatar
@@ -155,7 +156,7 @@ exports.getSalt = (userData) => {
                    FROM users 
                   WHERE id = ?`;
 
-    db.query(sql, [userData], (err, rows) => {
+    mysql.query(sql, [userData], (err, rows) => {
       if (err){
         reject(err);
       } else {
