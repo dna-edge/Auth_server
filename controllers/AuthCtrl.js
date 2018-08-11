@@ -1,7 +1,8 @@
 const validator = require('validator');
 
-const helpers = require('../utils/helpers');
 const authModel = require('../models/AuthModel');
+const helpers = require('../utils/helpers');
+const errorCode = require('../utils/error').code;
 
 let tokenError = {
   name:'tokenError',
@@ -18,17 +19,17 @@ exports.auth = (req, res, next) => {
   } else {
     authModel.auth(req.headers.token, (err, userData) => {
       if (err) {
-        return next(err);
+        return res.json(errorCode[err]);
       } else {
         req.userData = userData;
-        // return next();
+        return next();
 
-        const respond = {
-          status: 202,
-          message: "Authenticate Successfully", 
-          data: userData
-        };
-        return res.status(202).json(respond);
+        // const respond = {
+        //   status: 202,
+        //   message: "Authenticate Successfully", 
+        //   data: userData
+        // };
+        // return res.status(202).json(respond);
       }
     });
   }
@@ -46,8 +47,8 @@ exports.refresh = async (req, res, next) => {
 
     try {
       result = await authModel.refresh(req.headers.token);     
-    } catch (error) {
-      return next(error);
+    } catch (err) {
+      return res.json(errorCode[err]);
     }
 
     const respond = {
