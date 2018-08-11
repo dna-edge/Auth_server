@@ -1,15 +1,18 @@
 const validator = require('validator');
 
-const helpers = require('../utils/helpers');
 const userModel = require('../models/UserModel');
+const helpers = require('../utils/helpers');
+const errorCode = require('../utils/error').code;
 
 let validationError = {
   name:'ValidationError',
   errors:{}
 };
 
+
 /*******************
  *  Register
+ *  @param: id, password, confirm_password, email, nickname, avatar, description
  *  TODO validation
  *  TODO 이미지 등록
  ********************/
@@ -20,6 +23,8 @@ exports.register = async (req, res, next) => {
   const confirm_password = req.body.confirm_password || req.params.confirm_password;
   const email = req.body.email || req.params.email;
   const nickname = req.body.nickname || req.params.nickname;
+  const avatar = req.body.avatar || req.params.avatar || null;
+  const description = req.body.description || req.params.description || null;
 
   /* 1. 유효성 체크하기 */
   let validpassword;
@@ -80,12 +85,12 @@ exports.register = async (req, res, next) => {
       nickname,
       email,
       avatar,
+      description,
       salt: encodedPassword.newSalt
     };
     result = await userModel.register(userData);
-  } catch (error) {
-    // TODO 에러 잡았을때 응답메세지, 응답코드 수정할것
-    return next(error);
+  } catch (err) {
+    return res.json(errorCode[err]);
   }
   // 4. 등록 성공
   const respond = {
@@ -99,6 +104,7 @@ exports.register = async (req, res, next) => {
 
 /*******************
  *  Login
+ *  @param: id, password
  ********************/
 exports.login = async (req, res, next) => {
   /* PARAM */
@@ -110,12 +116,12 @@ exports.login = async (req, res, next) => {
 
   if (!id || validator.isEmpty(id)) {
     isValid = false;
-    validationError.errors.id = { message : 'ID is required!' };
+    validationError.errors.id = { message : 'ID is required' };
   }
 
   if (!password || validator.isEmpty(password)) {
     isValid = false;
-    validationError.errors.password = { message:'Password is required!' };
+    validationError.errors.password = { message:'Password is required' };
   }
 
   if (!isValid) return res.status(400).json(validationError);
@@ -136,14 +142,207 @@ exports.login = async (req, res, next) => {
 
     result = await userModel.login(userData);
 
-  } catch (error) {
-    return next(error);
+  } catch (err) {
+    return res.json(errorCode[err]);
   }
 
   /* 로그인 성공 시 */
   const respond = {
     status: 200,
     message : "Login Successfully",
+    data: result
+  };
+  return res.status(200).json(respond);  
+};
+
+
+
+/*******************
+ *  Select
+ *  @param: idx
+ ********************/
+exports.select = async (req, res, next) => {
+  /* PARAM */
+  const idx = req.body.idx || req.params.idx;
+
+  /* 유효성 체크하기 */
+  let isValid = true;
+
+  if (!idx || validator.isEmpty(idx)) {
+    isValid = false;
+    validationError.errors.idx = { message : 'Idx is required' };
+  }
+
+  if (!isValid) return res.status(400).json(validationError);
+  /* 유효성 체크 끝 */
+
+  let result = '';
+
+  try {
+    result = await userModel.select(idx);
+  } catch (err) {
+    return res.json(errorCode[err]);
+  }
+
+  /* 조회 성공 시 */
+  const respond = {
+    status: 200,
+    message : "Select User Successfully",
+    data: result
+  };
+  return res.status(200).json(respond);  
+};
+
+
+
+/*******************
+ *  Update
+ *  @param: idx, password, new_password, 
+ *    confirm_password, nickname, avatar, description
+ *  TODO 이미지 등록
+ ********************/
+exports.update = async (req, res, next) => {
+  /* PARAM */
+  const idx = req.userData.idx;
+  const password = req.body.password || req.params.password || null;
+  const newPassword = req.body.new_password || req.params.new_password || null;
+  const confirmPassword = req.body.confirm_password || req.params.confirm_password || null;
+  const nickname = req.body.nickname || req.params.nickname || null;
+  const avatar = req.body.avatar || req.params.avatar || null;
+  const description = req.body.description || req.params.description || null;
+
+  /* 비밀번호까지 바꿀건지 */
+  let changePassword = false;
+  /* 유효성 체크하기 */
+  let isValid = true;
+
+  if (newPassword && !validator.isEmpty(newPassword)) { // 새 비밀번호가 존재한다면
+    changePassword = true;
+
+    // 1. 새 비밀번호와 확인 비밀번호가 일치하는지 체크
+    if (!confirmPassword || !validator.equals(newPassword, confirmPassword)) {
+      isValid = false;
+      validationError.errors.password = { message : 'Passwords do not match' };    
+    }
+
+    // 2. 현재 비밀번호와 입력한 비밀번호가 같은지 체크
+    const userData = {
+      id: req.userData.id,
+      password
+    }
+    
+    if (isValid) {
+      if (!password || validator.isEmpty(password)) {
+        isValid = false;
+        validationError.errors.idx = { message : 'Please enter the original password' };
+      }
+      if (isValid && await userModel.passwordCheck(userData) !== true) {
+        isValid = false;
+        validationError.errors.idx = { message : 'Wrong Password' };
+      }
+    }    
+  }
+
+  if (!isValid) return res.status(400).json(validationError);
+  /* 유효성 체크 끝 */
+
+  let encodedPassword;
+  // 새 비밀번호 해싱
+  if (changePassword) {
+    encodedPassword = helpers.doCypher(newPassword);
+  }
+
+  const updateData = {
+    idx, nickname, avatar, description, encodedPassword
+  }
+  let result = '';
+
+  try {
+    result = await userModel.update(updateData, changePassword);
+  } catch (err) {
+    return next(err);
+    // return res.json(errorCode[err]);
+  }
+
+  /* 수정 성공 시 */
+  const respond = {
+    status: 201,
+    message : "Update User Successfully",
+    data: result
+  };
+  return res.status(201).json(respond);  
+};
+
+
+/*******************
+ *  block
+ *  @param: blockUseridx
+ ********************/
+exports.block = async (req, res, next) => {
+  /* PARAM */
+  const userIdx = req.userData.idx;
+  const blockUseridx = req.body.idx || req.params.idx;
+
+  /* 유효성 체크하기 */
+  let isValid = true;
+
+  if (!blockUseridx || validator.isEmpty(blockUseridx)) {
+    isValid = false;
+    validationError.errors.blockUseridx = 
+      { message : 'User (to Block) Index is required' };
+  }
+
+  if (!isValid) return res.status(400).json(validationError);
+  /* 유효성 체크 끝 */
+
+  let result = '';
+
+  try {
+    result = await userModel.block(userIdx, blockUseridx);
+  } catch (err) {
+    return next(err);
+    // return res.json(errorCode[err]);
+  }
+
+  let respond = {
+    status: 201,
+    message : "",
+    data: result
+  };
+  if (result === 0) {
+    /* 삭제 성공 시 */
+    respond.message = "Cancel Block User Successfully";
+  } else {
+    /* 차단 추가 성공 시 */
+    respond.message = "Block User Successfully";
+  }
+
+  return res.status(201).json(respond);  
+};
+
+
+
+/*******************
+ *  selectBlock
+ *  @param: idx
+ ********************/
+exports.selectBlock = async (req, res, next) => {
+  /* PARAM */
+  const idx = req.userData.idx;
+
+  let result = '';
+
+  try {
+    result = await userModel.selectBlock(idx);
+  } catch (err) {
+    return next(err);
+    // return res.json(errorCode[err]);
+  }
+
+  /* 조회 성공 시 */
+  const respond = {
+    status: 200,
+    message : "Select Block Users Successfully",
     data: result
   };
   return res.status(200).json(respond);  

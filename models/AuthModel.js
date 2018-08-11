@@ -12,11 +12,9 @@ exports.auth = (token, done) => {
 
       switch (err.message) {
         case 'jwt expired':
-          customErr = new Error("Token is expired");
-          return done(customErr);
+          return done(10400);
         case 'invalid token':
-          customErr = new Error("Token is invalid");
-          return done(customErr);
+          return done(10411);
         default:
           return done(err.message);
       }
@@ -53,8 +51,7 @@ exports.refresh = (token, done) => {
     return new Promise((resolve, reject) => {
       redis.get(token, (err, object) => {
         if (err){
-          const customErr = new Error("Token is expired or invalid: " + err);
-          reject(customErr);
+          reject(10412);
         } else { // 토큰 체크 완료
           redis.set(token, userData.id, 'EX', 7*24*60*60); // 7일 후 삭제됨 (갱신)
           const result = {
