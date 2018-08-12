@@ -35,7 +35,7 @@ exports.doCypher = (inputpass, salt) => {
 
 exports.getAfterDate = () => {
   var date = new Date();
-  const today = new Date();
+  const today = new Date() + 7;
   date = date.setDate(today.getDate());
  
   return date;
