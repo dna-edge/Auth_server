@@ -4,6 +4,5 @@ module.exports = {
   maximum_point: 500,
   
   cron_for_refresh: "* * * * *",
-  cron_for_point: "0, 30 * * * *"
-
+  cron_for_point: "0,30 * * * *"
 }
