@@ -17,6 +17,8 @@ global.env = require('./env');
 global.utils = require('./utils/global');
 require('./routes')(app);
 
+require('./utils/cron').setCron();
+
 const PORT = 9011;
 app.listen(PORT, () => {
   console.info(`[DNA-AuthApiServer] Listening on Port ${PORT}`);

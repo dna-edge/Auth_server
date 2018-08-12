@@ -1,5 +1,7 @@
-const redis = global.utils.redis;
 const jwt = require('jsonwebtoken');
+
+const redis = global.utils.redis;
+const helpers = require('../utils/helpers');
 
 /*******************
  *  Authenticate
@@ -40,7 +42,7 @@ exports.refresh = (token, done) => {
   return new Promise((resolve, reject) => {
     this.auth(token, (err, userData) => {
       if (err) {
-        reject(err);
+        reject(10400);
       } else {
         resolve(userData);
       }
@@ -49,16 +51,19 @@ exports.refresh = (token, done) => {
   .then((userData) => {
     // 2. redis에 존재하는지 확인
     return new Promise((resolve, reject) => {
-      redis.get(token, (err, object) => {
-        if (err){
-          reject(10412);
-        } else { // 토큰 체크 완료
-          redis.set(token, userData.id, 'EX', 7*24*60*60); // 7일 후 삭제됨 (갱신)
+      redis.hgetall('refreshTokens', (err, object) => {
+        console.log(object);
+        if (object[token]) { // 해당 토큰이 존재할 경우
+          const expiresIn = helpers.getAfterDate(); // 7일 후 삭제될 날짜
+          redis.hmset('refreshTokens', token.refreshToken, 
+            JSON.stringify({ idx: userData.idx, id: userData.id, expiresIn })); // 갱신
           const result = {
             accessToken: jwt.sign(userData, global.env.JWT_CERT, {'expiresIn': "12h"})
           };
-      
-          resolve(result);
+
+          resolve(result);          
+        } else {
+          reject(10411);
         }
       });
     });

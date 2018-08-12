@@ -143,7 +143,7 @@ exports.login = async (req, res, next) => {
     result = await userModel.login(userData);
 
   } catch (err) {
-    return res.json(errorCode[err]);
+    return res.status(400).json(errorCode[err]);
   }
 
   /* 로그인 성공 시 */
