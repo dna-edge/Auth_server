@@ -247,7 +247,7 @@ exports.update = (updateData, changePassword) => {
                 SET nickname = ?, avatar = ?, description = ? 
               WHERE idx = ?`
     }    
-console.log(sql);
+
     mysql.query(sql, params, 
         (err, rows) => {
           if (err) {
@@ -259,6 +259,7 @@ console.log(sql);
     });
   });
 }
+
 
 /*******************
  *  Block
@@ -350,3 +351,23 @@ exports.selectBlock = (idx) => {
     })
   });
 };
+
+
+/*******************
+ *  addPoint
+ *  @param
+ ********************/
+exports.addPoints = () => {
+  return new Promise((resolve, reject) => {
+    sql = `UPDATE users
+              SET points = points + 100
+            WHERE is_faulty = 0`;
+    mysql.query(sql, [], (err, rows) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(rows.affectedRows);
+      }
+    });
+  });
+}
