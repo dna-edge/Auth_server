@@ -33,6 +33,13 @@ exports.doCypher = (inputpass, salt) => {
   return result;
 };
 
+exports.getAfterDate = () => {
+  var date = new Date();
+  date = date.setDate(date.getDate() + 7);
+ 
+  return date;
+}
+
 exports.encrypt = (text) => {
   var cipher = crypto.createCipher(env.JWT_CODE, env.JWT_KEY);
   var crypted = cipher.update(text, 'utf8', 'base64');

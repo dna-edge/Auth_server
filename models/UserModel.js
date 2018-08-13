@@ -1,5 +1,6 @@
 const mysql = global.utils.mysql;
 const redis = global.utils.redis;
+const helpers = require('../utils/helpers');
 
 const jwt = require('jsonwebtoken');
 
@@ -123,8 +124,12 @@ exports.login = (userData) => {
         refreshToken: jwt.sign(profile, global.env.JWT_CERT, {'expiresIn': "7 days"})
       };
 
-      redis.set(token.refreshToken, profile.id, 'EX', 7*24*60*60); // 7일 후 삭제됨
-      redis.get(token.refreshToken,(err, object) => {
+      // 7일 후 날짜 구하기
+      const expiresIn = helpers.getAfterDate(); // 7일 후 삭제될 날짜
+
+      redis.hmset('refreshTokens', token.refreshToken, 
+        JSON.stringify({ idx: profile.idx, id: profile.id, expiresIn })); // 저장
+      redis.hgetall('refreshTokens', (err, object) => {
         if (err){
           reject(26500);
         } else { // refresh 토큰까지 완벽하게 저장된 경우
@@ -220,7 +225,7 @@ exports.passwordCheck = (userData) => {
 /*******************
  *  Update
  *  @param: updateData = { idx, nickname, avatar, description, 
- *            encodedPassword = { password, salt }
+ *            encodedPassword = { password, newSalt }
  *          }, 
  *          changePassword
  ********************/
@@ -235,7 +240,7 @@ exports.update = (updateData, changePassword) => {
                 SET password = ?, salt = ?, nickname = ?, 
                     avatar = ?, description = ? 
               WHERE idx = ?`
-      params.unshift(updateData.encodedPassword.salt)
+      params.unshift(updateData.encodedPassword.newSalt)
       params.unshift(updateData.encodedPassword.password);
     } else {
       sql = `UPDATE users
@@ -246,7 +251,6 @@ exports.update = (updateData, changePassword) => {
     mysql.query(sql, params, 
         (err, rows) => {
           if (err) {
-            console.log
             reject(err);
           } else {;
             resolve(rows);
@@ -254,6 +258,7 @@ exports.update = (updateData, changePassword) => {
     });
   });
 }
+
 
 /*******************
  *  Block
@@ -305,7 +310,6 @@ exports.block = (userIdx, blockUserIdx) => {
   .then((result) => {
     // 3. 결과 조회해 돌려주기
     return new Promise((resolve, reject) => {
-      console.log(result);
       if (!result.cancelBlock) { // 생성되었을 때는 생성한 row 리턴
         const sql = `SELECT user_idx, block_idx, created_at
                       FROM blocks 
@@ -345,3 +349,23 @@ exports.selectBlock = (idx) => {
     })
   });
 };
+
+
+/*******************
+ *  addPoint
+ *  @param
+ ********************/
+exports.addPoints = () => {
+  return new Promise((resolve, reject) => {
+    sql = `UPDATE users
+              SET points = points + 100
+            WHERE is_faulty = 0`;
+    mysql.query(sql, [], (err, rows) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(rows.affectedRows);
+      }
+    });
+  });
+}

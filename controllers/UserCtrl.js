@@ -131,8 +131,13 @@ exports.login = async (req, res, next) => {
 
   try {
     // TODO 회원이 없을 경우
-
-    const getSalt = await userModel.getSalt(id);
+    let getSalt;
+    try {
+      getSalt = await userModel.getSalt(id);
+    } catch (err) {
+      return next(err);
+      // return res.status(400).json(errorCode[err]);
+    }    
 
     const decodedPassword = helpers.doCypher(password, getSalt.salt).password;
     const userData = {
@@ -143,7 +148,8 @@ exports.login = async (req, res, next) => {
     result = await userModel.login(userData);
 
   } catch (err) {
-    return res.json(errorCode[err]);
+    return next(err);
+    // return res.status(400).json(errorCode[err]);
   }
 
   /* 로그인 성공 시 */
