@@ -251,7 +251,6 @@ exports.update = (updateData, changePassword) => {
     mysql.query(sql, params, 
         (err, rows) => {
           if (err) {
-            console.log
             reject(err);
           } else {;
             resolve(rows);
@@ -311,7 +310,6 @@ exports.block = (userIdx, blockUserIdx) => {
   .then((result) => {
     // 3. 결과 조회해 돌려주기
     return new Promise((resolve, reject) => {
-      console.log(result);
       if (!result.cancelBlock) { // 생성되었을 때는 생성한 row 리턴
         const sql = `SELECT user_idx, block_idx, created_at
                       FROM blocks 

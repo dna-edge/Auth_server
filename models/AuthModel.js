@@ -52,7 +52,6 @@ exports.refresh = (token, done) => {
     // 2. redis에 존재하는지 확인
     return new Promise((resolve, reject) => {
       redis.hgetall('refreshTokens', (err, object) => {
-        console.log(object);
         if (object[token]) { // 해당 토큰이 존재할 경우
           const expiresIn = helpers.getAfterDate(); // 7일 후 삭제될 날짜
           redis.hmset('refreshTokens', token.refreshToken, 
