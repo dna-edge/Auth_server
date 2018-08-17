@@ -28,6 +28,26 @@ exports.register = (userData) => {
     });
   })
   .then(() => {
+    // 2. 메일 중복 체크하기
+    return new Promise((resolve, reject) => {    
+      const sql = `SELECT email 
+                    FROM users 
+                    WHERE email = ?`;
+
+      mysql.query(sql, [userData.email], (err, rows) => {
+        if (err) {
+          reject(err);
+        } else {
+          if (rows.length !== 0) {
+            reject(22400);
+          } else {
+            resolve(null);
+          }
+        }
+      });
+    })
+  })
+  .then(() => {
     // 2. DB에 정보 삽입하기
     return new Promise((resolve, reject) => {
       const sql = `INSERT INTO users (id, password, nickname, email, avatar, salt) 
@@ -120,8 +140,8 @@ exports.login = (userData) => {
     // 3. 토큰 발급 및 저장
     return new Promise((resolve, reject) => {
       const token = {
-        accessToken: jwt.sign(profile, global.env.JWT_CERT, {'expiresIn': "12h"}),
-        refreshToken: jwt.sign(profile, global.env.JWT_CERT, {'expiresIn': "7 days"})
+        accessToken: jwt.sign(profile, process.env.JWT_CERT, {'expiresIn': "12h"}),
+        refreshToken: jwt.sign(profile, process.env.JWT_CERT, {'expiresIn': "7 days"})
       };
 
       // 7일 후 날짜 구하기
@@ -162,7 +182,7 @@ exports.getSalt = (userData) => {
         reject(err);
       } else {
         if (rows.length === 0) { // 해당 아이디 없음
-          reject(25400);
+          reject(23400);
         } else {
           resolve(rows[0]);
         }

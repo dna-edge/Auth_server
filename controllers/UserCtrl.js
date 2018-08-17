@@ -22,9 +22,10 @@ exports.register = async (req, res, next) => {
   const password = req.body.password || req.params.password;
   const confirm_password = req.body.confirm_password || req.params.confirm_password;
   const email = req.body.email || req.params.email;
-  const nickname = req.body.nickname || req.params.nickname;
   const avatar = req.body.avatar || req.params.avatar || null;
   const description = req.body.description || req.params.description || null;
+  let nickname = req.body.nickname || req.params.nickname;
+  
 
   /* 1. 유효성 체크하기 */
   let validpassword;
@@ -35,19 +36,14 @@ exports.register = async (req, res, next) => {
     validationError.errors.id = { message : "ID is required" };
   }
 
+  // nickname을 입력하지 않으면 자동으로 id와 같게 등록하도록 합니다
   if (!nickname || validator.isEmpty(nickname)) {
-    isValid = false;
-    validationError.errors.nickname = { message : "Nickname is required" };
+    nickname = id;
   }
 
   if (!email || validator.isEmpty(email)) {
     isValid = false;
     validationError.errors.email = { message : "Email is required" };
-  }
-
-  if (!validator.isEmail(email)) {
-    isValid = false;
-    validationError.errors.email = { message : "Invalid email format" };
   }
 
   if (!password || validator.isEmpty(password)) {
@@ -90,13 +86,15 @@ exports.register = async (req, res, next) => {
     };
     result = await userModel.register(userData);
   } catch (err) {
-    return res.json(errorCode[err]);
+    console.log(err);
+    return res.status(errorCode[err].status)
+              .json(errorCode[err].contents);
   }
   // 4. 등록 성공
   const respond = {
     status: 201,
     message : "Register Successfully",
-    data: result[0]
+    result: result[0]
   };
   return res.status(201).json(respond);
 };
@@ -135,8 +133,9 @@ exports.login = async (req, res, next) => {
     try {
       getSalt = await userModel.getSalt(id);
     } catch (err) {
-      return next(err);
-      // return res.status(400).json(errorCode[err]);
+      console.log(err);
+      return res.status(errorCode[err].status)
+                .json(errorCode[err].contents);
     }    
 
     const decodedPassword = helpers.doCypher(password, getSalt.salt).password;
@@ -148,15 +147,16 @@ exports.login = async (req, res, next) => {
     result = await userModel.login(userData);
 
   } catch (err) {
-    return next(err);
-    // return res.status(400).json(errorCode[err]);
+    console.log(err);
+    return res.status(errorCode[err].status)
+              .json(errorCode[err].contents);
   }
 
   /* 로그인 성공 시 */
   const respond = {
     status: 200,
     message : "Login Successfully",
-    data: result
+    result
   };
   return res.status(200).json(respond);  
 };
@@ -194,7 +194,7 @@ exports.select = async (req, res, next) => {
   const respond = {
     status: 200,
     message : "Select User Successfully",
-    data: result
+    result
   };
   return res.status(200).json(respond);  
 };
@@ -266,6 +266,7 @@ exports.update = async (req, res, next) => {
   try {
     result = await userModel.update(updateData, changePassword);
   } catch (err) {
+    console.log(err);
     return next(err);
     // return res.json(errorCode[err]);
   }
@@ -274,7 +275,7 @@ exports.update = async (req, res, next) => {
   const respond = {
     status: 201,
     message : "Update User Successfully",
-    data: result
+    result
   };
   return res.status(201).json(respond);  
 };
@@ -306,6 +307,7 @@ exports.block = async (req, res, next) => {
   try {
     result = await userModel.block(userIdx, blockUseridx);
   } catch (err) {
+    console.log(err);
     return next(err);
     // return res.json(errorCode[err]);
   }
@@ -313,7 +315,7 @@ exports.block = async (req, res, next) => {
   let respond = {
     status: 201,
     message : "",
-    data: result
+    result
   };
   if (result === 0) {
     /* 삭제 성공 시 */
@@ -341,6 +343,7 @@ exports.selectBlock = async (req, res, next) => {
   try {
     result = await userModel.selectBlock(idx);
   } catch (err) {
+    console.log(err);
     return next(err);
     // return res.json(errorCode[err]);
   }
@@ -349,7 +352,7 @@ exports.selectBlock = async (req, res, next) => {
   const respond = {
     status: 200,
     message : "Select Block Users Successfully",
-    data: result
+    result
   };
   return res.status(200).json(respond);  
 };

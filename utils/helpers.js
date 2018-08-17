@@ -1,5 +1,4 @@
 const crypto = require('crypto');
-const env = global.env;
 
 /*******
  * 난수 생성 함수
@@ -41,14 +40,14 @@ exports.getAfterDate = () => {
 }
 
 exports.encrypt = (text) => {
-  var cipher = crypto.createCipher(env.JWT_CODE, env.JWT_KEY);
+  var cipher = crypto.createCipher(process.env.JWT_CODE, process.env.JWT_KEY);
   var crypted = cipher.update(text, 'utf8', 'base64');
   crypted += cipher.final('base64');
   return crypted;
 };
 
 exports.decrypt = (text) => {
-  var decipher = crypto.createDecipher(env.JWT_CODE, env.JWT_KEY);
+  var decipher = crypto.createDecipher(process.env.JWT_CODE, process.env.JWT_KEY);
   var dec = decipher.update(text, 'base64', 'utf8')
   dec += decipher.final('utf8');
   return dec;
