@@ -8,15 +8,16 @@ const helpers = require('../utils/helpers');
  *  @param: (Access) token
  ********************/
 exports.auth = (token, done) => {
-  jwt.verify(token, global.env.JWT_CERT, (err, decoded) => {
+  jwt.verify(token, process.env.JWT_CERT, (err, decoded) => {
     if (err) {
       let customErr = '';
 
       switch (err.message) {
         case 'jwt expired':
-          return done(10400);
+          return done(11400);
         case 'invalid token':
-          return done(10411);
+        console.log(1);
+          return done(12400);
         default:
           return done(err.message);
       }
@@ -42,7 +43,7 @@ exports.refresh = (token, done) => {
   return new Promise((resolve, reject) => {
     this.auth(token, (err, userData) => {
       if (err) {
-        reject(10400);
+        reject(err);
       } else {
         resolve(userData);
       }
@@ -57,12 +58,12 @@ exports.refresh = (token, done) => {
           redis.hmset('refreshTokens', token.refreshToken, 
             JSON.stringify({ idx: userData.idx, id: userData.id, expiresIn })); // 갱신
           const result = {
-            accessToken: jwt.sign(userData, global.env.JWT_CERT, {'expiresIn': "12h"})
+            accessToken: jwt.sign(userData, process.env.JWT_CERT, {'expiresIn': "12h"})
           };
 
           resolve(result);          
         } else {
-          reject(10411);
+          reject(13400);
         }
       });
     });

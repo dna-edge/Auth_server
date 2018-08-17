@@ -12,7 +12,7 @@ const connection = mysql.createConnection({
   port: process.env.MYSQL_PORT,
   user: process.env.MYSQL_USER,
   password: process.env.MYSQL_PASSWORD,
-  database: process.env.DB_NAMEnpm 
+  database: process.env.DB_NAME
 });
 
 module.exports.mysql = connection;
