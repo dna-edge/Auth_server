@@ -19,8 +19,7 @@ require('./routes')(app);
 
 require('./utils/cron').setCron();
 
-const PORT = 9011;
-app.listen(PORT, () => {
+app.listen(process.env.PORT, process.env.HOST, () => {
   console.info(`[DNA-AuthApiServer] Listening on Port ${PORT}`);
 });
 
