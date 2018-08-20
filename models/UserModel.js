@@ -112,7 +112,7 @@ exports.login = (userData) => {
   .then(() => {
     // 2. 비밀번호 체크
     return new Promise((resolve, reject) => {
-      const sql = `SELECT idx, id, nickname, avatar
+      const sql = `SELECT idx, id, nickname, avatar, description, radius, is_anonymity
                      FROM users
                     WHERE id = ? AND password = ?`;
 
@@ -123,42 +123,54 @@ exports.login = (userData) => {
           if (rows.length === 0) { // 비밀번호가 틀렸을 경우
             reject(24400);
           } else {
-            const profile = {
+            const session = {
               idx: rows[0].idx,
               id: rows[0].id,
               nickname: rows[0].nickname,
               avatar: rows[0].avatar
             };
 
-            resolve(profile);
+            const profile = {
+              idx: rows[0].idx,
+              id: rows[0].id,
+              nickname: rows[0].nickname,
+              avatar: rows[0].avatar,
+              description: rows[0].description,
+              radius: rows[0].radius,
+              is_anonymity: rows[0].is_anonymity
+            }
+
+            const result = { session, profile }
+
+            resolve(result);
           }
         }
       });
     });
   })
-  .then((profile) => {
+  .then((result) => {
     // 3. 토큰 발급 및 저장
     return new Promise((resolve, reject) => {
       const token = {
-        accessToken: jwt.sign(profile, process.env.JWT_CERT, {'expiresIn': "12h"}),
-        refreshToken: jwt.sign(profile, process.env.JWT_CERT, {'expiresIn': "7 days"})
+        accessToken: jwt.sign(result.session, process.env.JWT_CERT, {'expiresIn': "12h"}),
+        refreshToken: jwt.sign(result.session, process.env.JWT_CERT, {'expiresIn': "7 days"})
       };
 
       // 7일 후 날짜 구하기
       const expiresIn = helpers.getAfterDate(); // 7일 후 삭제될 날짜
 
       redis.hmset('refreshTokens', token.refreshToken, 
-        JSON.stringify({ idx: profile.idx, id: profile.id, expiresIn })); // 저장
+        JSON.stringify({ idx: result.session.idx, id: result.session.id, expiresIn })); // 저장
       redis.hgetall('refreshTokens', (err, object) => {
         if (err){
           reject(26500);
         } else { // refresh 토큰까지 완벽하게 저장된 경우
-          const result = {
-            profile,
+          const response = {
+            profile: result.profile,
             token
           };
       
-          resolve(result);
+          resolve(response);
         }
       });
     });    

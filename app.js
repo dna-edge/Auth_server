@@ -18,9 +18,11 @@ global.utils = require('./utils/global');
 require('./routes')(app);
 
 require('./utils/cron').setCron();
+const server = require('http').Server(app);
 
-app.listen(process.env.PORT, process.env.HOST, () => {
-  console.info(`[DNA-AuthApiServer] Listening on Port ${PORT}`);
+server.listen(process.env.PORT, process.env.HOST, () => {
+  console.info('[DNA-UserApiServer] Listening on port %s at %s', 
+  process.env.PORT, process.env.HOST);
 });
 
 module.exports = app;
