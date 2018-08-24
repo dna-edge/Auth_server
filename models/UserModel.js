@@ -158,7 +158,6 @@ exports.login = (userData) => {
 
       // 7일 후 날짜 구하기
       const expiresIn = helpers.getAfterDate(); // 7일 후 삭제될 날짜
-
       redis.hmset('refreshTokens', token.refreshToken, 
         JSON.stringify({ idx: result.session.idx, id: result.session.id, expiresIn })); // 저장
       redis.hgetall('refreshTokens', (err, object) => {

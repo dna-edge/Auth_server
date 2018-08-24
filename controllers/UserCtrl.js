@@ -187,6 +187,7 @@ exports.select = async (req, res, next) => {
   try {
     result = await userModel.select(idx);
   } catch (err) {
+    console.log(err);
     return res.json(errorCode[err]);
   }
 

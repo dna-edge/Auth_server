@@ -15,8 +15,9 @@ exports.auth = (token, done) => {
       switch (err.message) {
         case 'jwt expired':
           return done(11400);
-        case 'invalid token':
-        console.log(1);
+        case 'invalid token':        
+          return done(12400);
+        case 'jwt malformed':
           return done(12400);
         default:
           return done(err.message);
