@@ -32,9 +32,9 @@ switch(process.env.NODE_ENV){
   case 'production':
     // Certificate
     try {
-      const privateKey = fs.readFileSync('/etc/letsencrypt/live/dna.soyoungpark.me.com/privkey.pem', 'utf8');
-      const certificate = fs.readFileSync('/etc/letsencrypt/live/yourdomain.com/cert.pem', 'utf8');
-      const ca = fs.readFileSync('/etc/letsencrypt/live/yourdomain.com/chain.pem', 'utf8');
+      const privateKey = fs.readFileSync('/etc/letsencrypt/live/dna.soyoungpark.me/privkey.pem', 'utf8');
+      const certificate = fs.readFileSync('/etc/letsencrypt/live/yourdomain/cert.pem', 'utf8');
+      const ca = fs.readFileSync('/etc/letsencrypt/live/yourdomain/chain.pem', 'utf8');
 
       const credentials = {
         key: privateKey,
