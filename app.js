@@ -10,26 +10,23 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const app = express();
 
-app.use(cors());
-app.use(logger('dev'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
-
-require('dotenv').config();
-global.utils = require('./utils/global');
-require('./routes')(app);
-
-require('./utils/cron').setCron();
-
-let server;
+let server, corsOptions;
 switch(process.env.NODE_ENV){
   case 'development':    
+    corsOptions = {
+      origin: 'http://localhost:9010',
+      credentials : true
+    };
+    app.use(cors(corsOptions));
     server = http.Server(app);    
     break;
 
   case 'production':
+    corsOptions = {
+      origin: 'https://dna.soyoungpark.me',
+      credentials : true
+    };
+    app.use(cors(corsOptions));
     // Certificate
     try {
       const privateKey = fs.readFileSync('/etc/letsencrypt/live/dna.soyoungpark.me/privkey.pem', 'utf8');
@@ -51,6 +48,18 @@ switch(process.env.NODE_ENV){
   default:
     return;
 }
+
+app.use(logger('dev'));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'public')));
+
+require('dotenv').config();
+global.utils = require('./utils/global');
+require('./routes')(app);
+
+require('./utils/cron').setCron();
 
 server.listen(process.env.PORT, process.env.HOST, () => {
   console.info('[DNA-UserApiServer] Listening on port %s at %s', 
