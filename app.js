@@ -33,7 +33,7 @@ switch(process.env.NODE_ENV){
     // Certificate
     try {
       const privateKey = fs.readFileSync('/etc/letsencrypt/live/dna.soyoungpark.me/privkey.pem', 'utf8');
-      const certificate = fs.readFileSync('/etc/letsencrypt/live/yourdomain/cert.pem', 'utf8');
+      const certificate = fs.readFileSync('/etc/letsencrypt/live/dna.soyoungpark.me/cert.pem', 'utf8');
       const ca = fs.readFileSync('/etc/letsencrypt/live/dna.soyoungpark.me/chain.pem', 'utf8');
 
       const credentials = {
