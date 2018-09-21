@@ -405,3 +405,57 @@ exports.report = async (req, res, next) => {
 
   return res.status(respond.status).json(respond);  
 };
+
+
+/*******************
+ *  SelectPoints
+ *  @param: idx
+ ********************/
+exports.selectBlock = async (req, res, next) => {
+  /* PARAM */
+  const idx = req.userData.idx;
+
+  let result = '';
+
+  try {
+    result = await userModel.selectPoints(idx);
+  } catch (err) {
+    console.log(err);
+    return next(err);
+  }
+
+  /* 조회 성공 시 */
+  const respond = {
+    status: 200,
+    message : "Select Points Successfully",
+    result
+  };
+  return res.status(200).json(respond);  
+};
+
+
+/*******************
+ *  reducePoints
+ *  @param: idx
+ ********************/
+exports.reducePoints = async (req, res, next) => {
+  /* PARAM */
+  const idx = req.userData.idx;
+
+  let result = '';
+
+  try {
+    result = await userModel.reducePoints(idx);
+  } catch (err) {
+    console.log(err);
+    return next(err);
+  }
+
+  /* 조회 성공 시 */
+  const respond = {
+    status: 201,
+    message : "Reduce Points Successfully",
+    result
+  };
+  return res.status(201).json(respond);  
+};
