@@ -411,7 +411,7 @@ exports.report = async (req, res, next) => {
  *  SelectPoints
  *  @param: idx
  ********************/
-exports.selectBlock = async (req, res, next) => {
+exports.selectPoints = async (req, res, next) => {
   /* PARAM */
   const idx = req.userData.idx;
 
@@ -425,12 +425,12 @@ exports.selectBlock = async (req, res, next) => {
   }
 
   /* 조회 성공 시 */
-  const respond = {
+  const response = {
     status: 200,
     message : "Select Points Successfully",
     result
   };
-  return res.status(200).json(respond);  
+  return res.status(200).json(response);  
 };
 
 
