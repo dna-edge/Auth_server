@@ -139,7 +139,8 @@ exports.login = (userData) => {
               avatar: rows[0].avatar,
               description: rows[0].description,
               radius: rows[0].radius,
-              anonymity: rows[0].anonymity
+              anonymity: rows[0].anonymity,
+              searchable: rows[0].searchable
             }
 
             const result = { session, profile }
