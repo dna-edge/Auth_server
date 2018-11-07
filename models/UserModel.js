@@ -114,7 +114,7 @@ exports.login = (userData) => {
   .then(() => {
     // 2. 비밀번호 체크
     return new Promise((resolve, reject) => {
-      const sql = `SELECT idx, id, nickname, avatar, description, radius, anonymity
+      const sql = `SELECT idx, id, nickname, avatar, description, radius, anonymity, searchable
                      FROM users
                     WHERE id = ? AND password = ?`;
 
